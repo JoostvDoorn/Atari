@@ -117,6 +117,7 @@ function Agent:training()
   if self.recurrent then
     self.policyNet:forget()
     self.targetNet:forget()
+    self.policyNet:storeState()
   end
 end
 
@@ -203,8 +204,10 @@ function Agent:observe(reward, rawObservation, terminal)
         self.saliencyMap:zero()
       end
     else
+      self.policyNet:restoreState()
       -- Retrieve estimates from all heads
       local QHeads = self.policyNet:forward(state)
+      self.policyNet:storeState()
 
       -- Sample from current episode head (indexes on first dimension with no batch)
       local Qs = QHeads:select(1, self.head)
@@ -266,6 +269,7 @@ function Agent:observe(reward, rawObservation, terminal)
     elseif self.recurrent then
       -- Forget last sequence
       self.policyNet:forget()
+      self.policyNet:storeState()
     end
   end
 
